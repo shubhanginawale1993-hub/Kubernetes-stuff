@@ -1,0 +1,207 @@
+Kubeadm setup and application running command 
+
+
+ 1  sudo yum install docker -y
+    2  sudo systemctl start docker
+    3  sudo systemctl enable docker
+    4  sudo chmod 777 /var/run/docker.sock
+    5  #https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+    6  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    7  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+    8  echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+    9  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+   10  kubectl version --client
+   11  sudo setenforce 0
+   12  sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+   13  cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+   14  [kubernetes]
+   15  name=Kubernetes
+   16  baseurl=https://pkgs.k8s.io/core:/stable:/v1.35/rpm/
+   17  enabled=1
+   18  gpgcheck=1
+   19  gpgkey=https://pkgs.k8s.io/core:/stable:/v1.35/rpm/repodata/repomd.xml.key
+   20  exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+   21  EOF
+   22  sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+   23  sudo systemctl enable --now kubelet
+   24  #https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises
+   25  curl https://raw.githubusercontent.com/projectcalico/calico/v3.31.3/manifests/calico.yaml -O
+   26  kubectl apply -f calico.yaml
+   27  sudo kubeadm init
+   28  mkdir -p $HOME/.kube
+   29  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+   30  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+   31  kubectl get nodes
+   32  alias k =kubectl
+   33  alias k = kubectl
+   34  kubectl get nodes
+   35  k get all
+   36  kubectl get all
+   37  ls
+   38  kubectl apply -f calico.yaml
+   39  kubectl get all
+   40  kubectl get nodes
+   41  kubectl get all
+   42  vi pod1.yaml
+   43  kubectl apply -f pod1.yaml 
+   44  kubectl get all
+   45  kubectl get nodes
+   46  alias k=kubectl
+   47  k get all
+   48  vi deployment1.yml
+   49  k apply -f deployment1.yml 
+   50  ls
+   51  k get all
+   52  vi deployment.yaml
+   53  k apply -f deployment.yaml 
+   54  vi deployment.yaml
+   55  k apply -f deployment.yaml 
+   56  docker -v
+   57  docker run -it ubuntu
+   58  docker ps
+   59  docker ps all
+   60  docker network ls
+   61  ps
+   62  docker images
+   63  docker image history ubuntu
+   64  docker image inspect
+   65  docker image inspect ubuntu
+   66  docker container ls
+   67  docker run -it ubuntu
+   68  docker container ls -a
+   69  docker container ls 
+   70  k get -o wide
+   71  kubectl get -o wide
+   72  kubectl get all -o wide
+   73  kubectl nodes
+   74  kubectl get nodes
+   75  vi pod1.yml
+   76  kubectl apply -f pod1.yml 
+   77  kubectl get all
+   78  kubectl get pod
+   79  vi deployment-1.yml
+   80  kubectl apply -f deployment-1.yml
+   81  vi deployment-1.yml
+   82  kubectl apply -f deployment-1.yml
+   83  vi deployment-1.yml
+   84  kubectl apply -f deployment-1.yml
+   85  kubectl get pod
+   86  kubectl get deployment-1.yml
+   87  kubectl get deployment
+   88  kubectl get all
+   89  kubectl describe pod/myapp-bf446946b-5vq7r
+   90  kubectl describe pod/myapp-bf446946b-5vq7r |more
+   91   
+   92  kubectl get all
+   93  kubectl describe pod/nginx
+   94  kubectl get all
+   95  alias k=kubectl
+   96  k get all
+   97  k describe pod/myapp-bf446946b-5wjqk |head
+   98  k get all
+   99  kubectl get svc
+  100  kubectl get all -o wide
+  101  vi service-1.yml
+  102  kubectl apply -f service-1.yml 
+  103  vi service-1.yml
+  104  kubectl apply -f service-1.yml 
+  105  vi service-1.yml
+  106  kubectl apply -f service-1.yml 
+  107  k get all
+  108  kubectl describe deployment.apps/myapp
+  109  for doing changes in deployment mean want to update version or image
+  do changes in previous deployment and apply it
+  
+  116  vi deployment-1.yml 
+  117  kubectl apply -f deployment-1.yml 
+  118  kubectl get all
+  119  kubectl rollout history deployment.apps/myapp  # for checking rollout
+  then you can check rollout via brouser using public ip and nodeport
+  120 kubectl describe deployment.apps/myapp  #####for checking how rolling out done
+  121 [ec2-user@ip-172-31-29-157 ~]$ kubectl rollout undo deployment.apps/myapp     #################### for previouson for rolling back again
+  deployment.apps/myapp rolled back
+  122   kubectl describe deployment.apps/myapp #########for checking status of rollback
+  #############check on browser also , refresh prevoius page#################
+  
+  123 ##########If we have to add replicas###########
+  do changes in the deployment manifests/calico file and apply
+  
+  ########for Checking Namespace##############
+  kubectl get namespace
+  kubectl get ns
+  
+  ######## To creat Namespace##############
+  kubectl create ns abc
+  kubectl get ns abc
+  
+  ##########4-Types of Namespace##############
+  1 Default     	 kubectl get all                 	######## user creat a things like user plygound##############
+  2 kube-system   	kubectl get all -n kube-system   	######## all API server related information like its running or not thats showing##########
+  3 kube-public   	kubectl get all -n kube-public   	#######  ususlly its empty when we give access publically then its update############
+  4 kube-node-lease kubectl get all -n kube-node-lease  #######  use at the internal purpose when deployement and changs happen###########
+  
+  
+  
+  
+  
+  
+  
+  
+  DEPLOYMENT MANIFESTS/CALICO
+  
+  apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp
+        image: httpd
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+
+
+
+  Services manifests/calico
+  
+  apiVersion: v1
+kind: Service
+metadata:
+  name: MYAPP
+  namespace: default
+spec:
+  selector:
+    app: MYAPP
+  type: NodePort
+  sessionAffinity: None
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  ports:
+  - name: MYAPP
+    protocol: TCP
+    port: 80 #service port
+    targetPort: 80 #container port
+    # If you set the `spec.type` field to `NodePort` and you want a specific port number,
+    # you can specify a value in the `spec.ports[*].nodePort` field.
+    nodePort: 30080
+	
+	
+  
+  
+  
+  
+  
